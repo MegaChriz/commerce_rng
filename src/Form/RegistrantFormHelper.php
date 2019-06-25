@@ -247,6 +247,11 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
     $form_state->set('person__form_display', $display);
     $form_state->set('person__entity', $person);
 
+    // Revision log message doesn't make sense in event registration context.
+    if (isset($form['revision_log_message'])) {
+      $form['revision_log_message']['#access'] = FALSE;
+    }
+
     return $form;
   }
 
