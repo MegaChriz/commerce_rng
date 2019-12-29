@@ -15,8 +15,8 @@ use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Url;
 use Drupal\rng\EventManagerInterface;
 use Drupal\rng\RegistrantFactoryInterface;
-use Drupal\rng\RegistrantInterface;
-use Drupal\rng\RegistrationInterface;
+use Drupal\rng\Entity\RegistrantInterface;
+use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\Entity\Registration;
 use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
 use Drupal\commerce_rng\RegistrationDataInterface;
@@ -174,7 +174,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       $order_item_id = $order_item->id();
 
       // Check for an existing registration on the order item.
-      /** @var \Drupal\rng\Entity\Registration|null $registration */
+      /** @var \Drupal\rng\Entity\RegistrationInterface|null $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
       if (!$registration) {
         // A certain event item does not contain a registration yet. Information
@@ -200,7 +200,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    * @param \Drupal\rng\RegistrationInterface $registration
    *   A registration entity.
    *
-   * @return \Drupal\rng\RegistrantInterface[]
+   * @return \Drupal\rng\Entity\RegistrantInterface[]
    *   An array of registrant entities.
    */
   protected function getRegistrants(RegistrationInterface $registration) {
@@ -214,10 +214,10 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    *   The form structure to fill in.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The complete state of the checkout form.
-   * @param \Drupal\rng\RegistrationInterface $registration
+   * @param \Drupal\rng\Entity\RegistrationInterface $registration
    *   A registration entity.
    *
-   * @return \Drupal\rng\RegistrantInterface|null
+   * @return \Drupal\rng\Entity\RegistrantInterface|null
    *   The registrant to load a form for.
    */
   protected function getActiveRegistrant(array $form, FormStateInterface $form_state, RegistrationInterface $registration) {
@@ -238,12 +238,42 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   }
 
   /**
+   * Creates a registration for the given order item.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $event
+   *   The event to create a registration entity for.
+   *
+   * @return \Drupal\rng\Entity\RegistrationInterface
+   *   A registration instance.
+   *
+   * @todo fails if event is not configured.
+   */
+  protected function createRegistration(EntityInterface $event) {
+    $registration_types = $this->eventManager->getMeta($event)->getRegistrationTypes();
+    if (count($registration_types) > 1) {
+      throw new \Exception('Multiple registration types not supported by UKKB Study.');
+    }
+    if (count($registration_types) === 0) {
+      throw new \Exception('No registration types found.');
+    }
+
+    $registration_type = reset($registration_types);
+
+    $registration = Registration::create([
+      'type' => $registration_type->id(),
+    ]);
+    $registration->setEvent($event);
+
+    return $registration;
+  }
+
+  /**
    * Creates a new registrant.
    *
-   * @param \Drupal\rng\RegistrationInterface $registration
+   * @param \Drupal\rng\Entity\RegistrationInterface $registration
    *   A registration entity.
    *
-   * @return \Drupal\rng\Entity\Registrant
+   * @return \Drupal\rng\Entity\RegistrantInterface
    *   The created registrant.
    */
   protected function createRegistrant(RegistrationInterface $registration) {
@@ -258,7 +288,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   /**
    * Deletes a registrant.
    *
-   * @param \Drupal\rng\RegistrantInterface $registrant
+   * @param \Drupal\rng\Entity\RegistrantInterface $registrant
    *   The registrant to delete.
    */
   protected function deleteRegistrant(RegistrantInterface $registrant) {
@@ -302,6 +332,14 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
 
       /** @var \Drupal\rng\Entity\Registration $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
+      if (!$registration) {
+        // Create a new registration.
+        $registration = $this->createRegistration($product);
+        $registration->field_order_item = $order_item_id;
+        $registration->setRegistrantQty($order_item->getQuantity());
+        $registration->setConfirmed(FALSE);
+        $registration->save();
+      }
 
       $pane_form[$order_item_id] = [
         '#parents' => array_merge($pane_form['#parents'], [$order_item_id]),
@@ -319,7 +357,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    *   The form structure to fill in.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The complete state of the checkout form.
-   * @param \Drupal\rng\RegistrationInterface $registration
+   * @param \Drupal\rng\Entity\RegistrationInterface $registration
    *   A registration entity.
    *
    * @return array
