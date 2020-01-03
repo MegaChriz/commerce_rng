@@ -182,11 +182,8 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
         return FALSE;
       }
 
-      /** @var \Drupal\rng\EventMetaInterface $meta */
-      $meta = $this->eventManager->getMeta($product);
-
       // Count registrants. Check if there are enough registrants.
-      if (count($registration->getRegistrantIds()) < $meta->getRegistrantsMinimum()) {
+      if (count($registration->getRegistrantIds()) < $this->getRegistrantsMinimum($product)) {
         // There exists a registration with zero registrants. Information is not
         // complete.
         return FALSE;
@@ -573,10 +570,8 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       // Check for enough registrants on the order item.
       /** @var \Drupal\rng\Entity\Registration|null $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
-      /** @var \Drupal\rng\EventMetaInterface $meta */
-      $meta = $this->eventManager->getMeta($product);
-      $minimum = $meta->getRegistrantsMinimum();
-      $maximum = $meta->getRegistrantsMaximum();
+      $minimum = $this->getRegistrantsMinimum($product);
+      $maximum = $this->getRegistrantsMaximum($product);
 
       if (!$registration || count($registration->getRegistrantIds()) < $minimum) {
         // A certain event item does not contain a registration yet or has zero
@@ -586,13 +581,39 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
           '@minimum' => $minimum,
         ]));
       }
-      elseif ($maximum > $minimum && count($registration->getRegistrantIds()) > $maximum) {
+      elseif ($maximum >= $minimum && count($registration->getRegistrantIds()) > $maximum) {
         $form_state->setError($pane_form, $this->formatPlural($maximum, 'There are too many registrants for %title. There must be at most 1 registrant.', 'There are too many registrants for %title. There must be at most @maximum registrants.', [
           '%title' => $order_item->getTitle(),
           '@maximum' => $maximum,
         ]));
       }
     }
+  }
+
+  /**
+   * Returns the minimum amount of registrants needed.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $product
+   *   The product entity.
+   *
+   * @return int
+   *   Minimum number of registrants allowed (>= 0)
+   */
+  protected function getRegistrantsMinimum(EntityInterface $product) {
+    return $this->eventManager->getMeta($product)->getRegistrantsMinimum();
+  }
+
+  /**
+   * Returns the maximum amount of registrants needed.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $product
+   *   The product entity.
+   *
+   * @return int|EventMetaInterface::CAPACITY_UNLIMITED
+   *   Maximum number of registrants allowed (>= 0), or unlimited.
+   */
+  protected function getRegistrantsMaximum(EntityInterface $product) {
+    return $this->eventManager->getMeta($product)->getRegistrantsMaximum();
   }
 
 }
