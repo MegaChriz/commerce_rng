@@ -11,6 +11,14 @@ use Drupal\rng\RegistrationInterface;
 interface RegistrationDataInterface {
 
   /**
+   * Creates registrations for order items that don't have them yet.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order to create registrations for.
+   */
+  public function generateOrderRegistrations(OrderInterface $order);
+
+  /**
    * Returns the order item from the registration.
    *
    * @param \Drupal\rng\RegistrationInterface $registration

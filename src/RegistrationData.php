@@ -6,7 +6,9 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\rng\Entity\Registration;
 use Drupal\rng\EventManagerInterface;
 use Drupal\rng\RegistrationInterface;
 
@@ -48,6 +50,61 @@ class RegistrationData implements RegistrationDataInterface {
     $this->registrationStorage = $entity_type_manager->getStorage('registration');
     $this->registrantStorage = $entity_type_manager->getStorage('registrant');
     $this->eventManager = $event_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function generateOrderRegistrations(OrderInterface $order) {
+    foreach ($order->getItems() as $order_item) {
+      $product = $this->orderItemGetEvent($order_item);
+      if (!$product) {
+        // Not an event.
+        continue;
+      }
+
+      $order_item_id = $order_item->id();
+
+      // Check for an existing registration on the order item.
+      /** @var \Drupal\rng\Entity\Registration|null $registration */
+      $registration = $this->getRegistrationByOrderItemId($order_item_id);
+      if (!$registration) {
+        // Create a new registration.
+        $registration = $this->createRegistration($product);
+        $registration->field_order_item = $order_item_id;
+        $registration->save();
+      }
+    }
+  }
+
+  /**
+   * Creates a registration for the given order item.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $event
+   *   The event to create a registration entity for.
+   *
+   * @return \Drupal\rng\RegistrationInterface
+   *   A registration instance.
+   *
+   * @todo fails if event is not configured.
+   */
+  protected function createRegistration(EntityInterface $event) {
+    $registration_types = $this->eventManager->getMeta($event)->getRegistrationTypes();
+    if (count($registration_types) > 1) {
+      throw new \Exception('Multiple registration types not supported by UKKB Study.');
+    }
+    if (count($registration_types) === 0) {
+      throw new \Exception('No registration types found.');
+    }
+
+    $registration_type = reset($registration_types);
+
+    $registration = Registration::create([
+      'type' => $registration_type->id(),
+    ]);
+    $registration->setEvent($event);
+
+    return $registration;
   }
 
   /**

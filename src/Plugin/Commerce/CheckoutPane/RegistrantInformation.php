@@ -152,7 +152,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   public function isVisible() {
     // The order must contain at least one event product entity.
     foreach ($this->order->getItems() as $order_item) {
-      if ($this->orderItemGetEvent($order_item)) {
+      if ($this->registrationData->orderItemGetEvent($order_item)) {
         return TRUE;
       }
     }
@@ -165,7 +165,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    */
   public function isComplete() {
     foreach ($this->order->getItems() as $order_item) {
-      $product = $this->orderItemGetEvent($order_item);
+      $product = $this->registrationData->orderItemGetEvent($order_item);
       if (!$product) {
         // Not an event.
         continue;
@@ -192,25 +192,6 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
 
     // In all other cases, the information seems to be complete.
     return TRUE;
-  }
-
-  /**
-   * Returns the order item's product if the product is a RNG event.
-   *
-   * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
-   *   The order item to check for.
-   *
-   * @return \Drupal\commerce_product\Entity\ProductInterface|null
-   *   The product entity if it is an event, or null.
-   */
-  protected function orderItemGetEvent(OrderItemInterface $order_item) {
-    $purchased_entity = $order_item->getPurchasedEntity();
-    if ($purchased_entity instanceof ProductVariationInterface) {
-      $product = $purchased_entity->getProduct();
-      if ($product && $this->eventManager->isEvent($product)) {
-        return $product;
-      }
-    }
   }
 
   /**
@@ -254,36 +235,6 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
     }
 
     return $registrant;
-  }
-
-  /**
-   * Creates a registration for the given order item.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $event
-   *   The event to create a registration entity for.
-   *
-   * @return \Drupal\rng\RegistrationInterface
-   *   A registration instance.
-   *
-   * @todo fails if event is not configured.
-   */
-  protected function createRegistration(EntityInterface $event) {
-    $registration_types = $this->eventManager->getMeta($event)->getRegistrationTypes();
-    if (count($registration_types) > 1) {
-      throw new \Exception('Multiple registration types not supported by UKKB Study.');
-    }
-    if (count($registration_types) === 0) {
-      throw new \Exception('No registration types found.');
-    }
-
-    $registration_type = reset($registration_types);
-
-    $registration = Registration::create([
-      'type' => $registration_type->id(),
-    ]);
-    $registration->setEvent($event);
-
-    return $registration;
   }
 
   /**
@@ -338,7 +289,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
     foreach ($this->order->getItems() as $order_item) {
-      $product = $this->orderItemGetEvent($order_item);
+      $product = $this->registrationData->orderItemGetEvent($order_item);
       if (!$product) {
         // Not an event.
         continue;
@@ -346,15 +297,11 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
 
       $order_item_id = $order_item->id();
 
-      // Check for an existing registration on the order item.
-      /** @var \Drupal\rng\Entity\Registration|null $registration */
+      // Create registrations for order items that don't have them yet.
+      $this->registrationData->generateOrderRegistrations($this->order);
+
+      /** @var \Drupal\rng\Entity\Registration $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
-      if (!$registration) {
-        // Create a new registration.
-        $registration = $this->createRegistration($product);
-        $registration->field_order_item = $order_item_id;
-        $registration->save();
-      }
 
       $pane_form[$order_item_id] = [
         '#parents' => array_merge($pane_form['#parents'], [$order_item_id]),
@@ -559,7 +506,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    */
   public function validatePaneForm(array &$pane_form, FormStateInterface $form_state, array &$complete_form) {
     foreach ($this->order->getItems() as $order_item) {
-      $product = $this->orderItemGetEvent($order_item);
+      $product = $this->registrationData->orderItemGetEvent($order_item);
       if (!$product) {
         // Not an event.
         continue;
@@ -609,7 +556,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    * @param \Drupal\Core\Entity\EntityInterface $product
    *   The product entity.
    *
-   * @return int|EventMetaInterface::CAPACITY_UNLIMITED
+   * @return int|EventMetaInterfaceCAPACITY_UNLIMITED
    *   Maximum number of registrants allowed (>= 0), or unlimited.
    */
   protected function getRegistrantsMaximum(EntityInterface $product) {
