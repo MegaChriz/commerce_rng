@@ -2,7 +2,6 @@
 
 namespace Drupal\commerce_rng\Form;
 
-use Drupal\commerce_order\Entity\Order;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\EntityManagerInterface;
