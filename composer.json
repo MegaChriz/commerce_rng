@@ -1,8 +1,8 @@
 {
-    "name": "megachriz/commerce_rng",
+    "name": "drupal/commerce_rng",
     "type": "drupal-module",
     "description": "This is an example implementation of how an integration between RNG and Commerce could work.",
-    "homepage": "https://www.drupal.org/sandbox/megachriz/2940732",
+    "homepage": "http://drupal.org/project/commerce_rng",
     "license": "GPL-2.0+",
     "require": {
         "drupal/core": "^8.8||^9",
@@ -10,12 +10,6 @@
         "drupal/commerce": "^2.12"
     },
     "require-dev": {
-        "composer/installers": "^1.2",
-        "cweagans/composer-patches": "^1.6",
-        "drupal/coder": "8.2.12",
-        "bex/behat-screenshot": "^1.2",
-        "phpmd/phpmd": "^2.6",
-        "phpmetrics/phpmetrics": "^2.4",
         "drupal/token": "^1.5"
     },
     "minimum-stability": "dev"
