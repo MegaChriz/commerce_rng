@@ -15,7 +15,7 @@ abstract class CommerceRngBrowserTestBase extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'block',
     'field',
@@ -35,7 +35,7 @@ abstract class CommerceRngBrowserTestBase extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->placeBlock('commerce_cart');

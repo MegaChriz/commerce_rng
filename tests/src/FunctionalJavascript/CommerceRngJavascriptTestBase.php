@@ -19,7 +19,12 @@ abstract class CommerceRngJavascriptTestBase extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected $defaultTheme = 'stark';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
     'system',
     'block',
     'field',
@@ -53,7 +58,7 @@ abstract class CommerceRngJavascriptTestBase extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->store = $this->createStore();
