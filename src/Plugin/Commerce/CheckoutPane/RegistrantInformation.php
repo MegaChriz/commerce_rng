@@ -585,7 +585,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    *   Minimum number of registrants allowed (>= 0)
    */
   protected function getRegistrantsMinimum(EntityInterface $product) {
-    return $this->eventManager->getMeta($product)->getRegistrantsMinimum();
+    return 1;
   }
 
   /**
