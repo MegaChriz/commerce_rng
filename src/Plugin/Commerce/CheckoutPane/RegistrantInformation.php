@@ -6,6 +6,8 @@ use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
+use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
+use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -18,8 +20,6 @@ use Drupal\rng\RegistrantFactoryInterface;
 use Drupal\rng\Entity\RegistrantInterface;
 use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\Entity\Registration;
-use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
-use Drupal\commerce_rng\RegistrationDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -454,6 +454,10 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
 
     $count = 0;
     foreach ($registrants as $i => $registrant) {
+      if (!$registrant->id()) {
+        // Skip registrants that aren't saved yet.
+        continue;
+      }
       $count++;
       $row = [
         '#type' => 'container',
@@ -467,7 +471,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
         '#title' => $this->t('Registrant @number', [
           '@number' => $count,
         ]),
-        '#markup' => $registrant->getIdentity()->label(),
+        '#markup' => $registrant->label(),
       ];
 
       $row['actions'] = [
