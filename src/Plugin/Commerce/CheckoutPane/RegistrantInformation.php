@@ -332,14 +332,6 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
 
       /** @var \Drupal\rng\Entity\Registration $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
-      if (!$registration) {
-        // Create a new registration.
-        $registration = $this->createRegistration($product);
-        $registration->field_order_item = $order_item_id;
-        $registration->setRegistrantQty($order_item->getQuantity());
-        $registration->setConfirmed(FALSE);
-        $registration->save();
-      }
 
       $pane_form[$order_item_id] = [
         '#parents' => array_merge($pane_form['#parents'], [$order_item_id]),

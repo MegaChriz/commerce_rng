@@ -180,6 +180,10 @@ class RegistrationData implements RegistrationDataInterface {
       $registration = $this->getRegistrationByOrderItemId($order_item_id);
       if ($registration) {
         foreach ($registration->getRegistrants() as $registrant) {
+          // Skip empty registrants.
+          if (!$registrant->id()) {
+            continue;
+          }
           $identity = $registrant->getIdentity();
           if ($identity) {
             $registrants_per_order_item[$order_item_id][$registrant->id()] = $identity->label();
@@ -227,9 +231,22 @@ class RegistrationData implements RegistrationDataInterface {
     $registration = $this->getRegistrationByOrderItemId($order_item->id());
     if ($registration) {
       $quantity = count($registration->getRegistrantIds());
-      $order_item->setQuantity($quantity);
-      $registration->setRegistrantQty($quantity);
-      $registration->save();
+      // Update the order item quantity in case it is above zero.
+      if ($quantity > 0) {
+        $order_item->setQuantity($quantity);
+        $registration->setRegistrantQty($quantity);
+        $registration->save();
+      }
+      else {
+        // If no registrants exist for this item, the quantity is always one.
+        // This is to prevent the order item from getting removed after deleting
+        // a registrant.
+        $order_item->setQuantity(1);
+        // But on the registration, the quantity becomes zero. Else registrant
+        // stubs get created that are missing identities.
+        $registration->setRegistrantQty(0);
+        $registration->save();
+      }
     }
     elseif ($this->orderItemGetEvent($order_item)) {
       // If no registration for this item is known, the quantity is always one.
