@@ -104,7 +104,7 @@ function commerce_rng_form_commerce_order_event_edit_form_alter(array &$form, Fo
   foreach ($registrant_data as $registrant) {
     $product_variation_id = $registrant['product_variation_id'];
     if (!isset($buffer[$product_variation_id])) {
-      $buffer[$product_variation_id] = commerce_rng_form_commerce_order_create_registration_form_container($order, $registrant['registrant_id'], $registrant['product_variation_title']);
+      $buffer[$product_variation_id] = commerce_rng_form_commerce_order_create_registration_form_container($order, $registrant['registration_id'], $registrant['product_variation_title']);
     }
 
     $edit_link = Link::fromTextAndUrl('edit',
