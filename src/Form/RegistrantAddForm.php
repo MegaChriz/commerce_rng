@@ -271,6 +271,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     // Find existing identities.
     $storage = $this->entityTypeManager->getStorage($person_entity_type_id);
     $ids = $storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $person_bundle)
       ->condition('uid', $uid)
       ->execute();

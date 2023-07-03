@@ -121,6 +121,7 @@ class RegistrationData implements RegistrationDataInterface {
 
     // Get all registrations referring these order id's.
     $registration_ids = $this->registrationStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('field_order_item', $order_item_ids, 'IN')
       ->execute();
     krsort($registration_ids);
@@ -135,6 +136,7 @@ class RegistrationData implements RegistrationDataInterface {
   public function getRegistrationByOrderItemId($order_item_id) {
     // Get all registrations referring these order id's.
     $registration_ids = $this->registrationStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('field_order_item', $order_item_id)
       ->execute();
 
