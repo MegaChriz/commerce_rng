@@ -22,9 +22,9 @@ services:
   # Commerce.
   commerce_rng.availability_checker:
     class: Drupal\commerce_rng\EventAvailabilityChecker
-    arguments: ['@rng.event_manager']
+    arguments: ['@rng.event_manager', '@commerce_rng.registration_data']
     tags:
-      - { name: commerce.availability_checker, priority: 0 }
+      - { name: commerce_order.availability_checker, priority: 0 }
   commerce_rng.checkout_completion_register_event_subscriber:
     class: Drupal\commerce_rng\EventSubscriber\CheckoutCompletionRegisterEventSubscriber
     tags:
