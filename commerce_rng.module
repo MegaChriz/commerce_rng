@@ -7,12 +7,85 @@
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\profile\Entity\ProfileInterface;
 use Drupal\rng\Entity\RegistrantInterface;
 use Drupal\rng\Entity\RegistrationInterface;
+
+/*******************************************************************************
+ * DRUPAL HOOKS
+ ******************************************************************************/
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function commerce_rng_entity_extra_field_info() {
+  $extra = [];
+
+  $extra['registrant']['registrant']['display']['registration'] = [
+    'label' => t('Registration'),
+    'description' => t('Link to the registration entity.'),
+    'visible' => FALSE,
+  ];
+  $extra['registrant']['registrant']['display']['order'] = [
+    'label' => t('Order', [], ['context' => 'commerce_order']),
+    'description' => t('Link to the order that this registrant belongs to.'),
+    'visible' => FALSE,
+  ];
+  $extra['registrant']['registrant']['display']['event'] = [
+    'label' => t('Event'),
+    'description' => t('Link to the event.'),
+    'visible' => FALSE,
+  ];
+
+  return $extra;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for registrant entities.
+ */
+function commerce_rng_registrant_view(array &$build, EntityInterface $registrant, EntityViewDisplayInterface $display, $view_mode) {
+  if ($display->getComponent('registration')) {
+    $registration = $registrant->getRegistration();
+    if ($registration->access('view')) {
+      $build['registration'] = $registration->toLink(t('Registration'))->toRenderable();
+    }
+  }
+
+  if ($display->getComponent('order')) {
+    $registration = $registrant->getRegistration();
+    $order_item = \Drupal::service('commerce_rng.registration_data')
+      ->registrationGetOrderItem($registration);
+    if ($order_item instanceof OrderItemInterface) {
+      $order = $order_item->getOrder();
+
+      if ($order->access('view')) {
+        $build['order'] = [
+          '#type' => 'item',
+          '#title' => t('Order', [], ['context' => 'commerce_order']),
+          $order->toLink()->toRenderable(),
+        ];
+      }
+    }
+  }
+
+  if ($display->getComponent('event')) {
+    $event = $registrant->getRegistration()
+      ->getEvent();
+
+    if ($event instanceof EntityInterface && $event->access('view')) {
+      $build['event'] = [
+        '#type' => 'item',
+        '#title' => t('Event'),
+        $event->toLink()->toRenderable(),
+      ];
+    }
+  }
+}
 
 /*******************************************************************************
  * ENTITY HOOKS
