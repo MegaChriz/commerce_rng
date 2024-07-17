@@ -27,6 +27,17 @@ function commerce_rng_commerce_order_item_presave(OrderItemInterface $order_item
 }
 
 /**
+ * Implements hook_ENTITY_TYPE_delete() for entity type 'commerce_order_item'.
+ */
+function commerce_rng_commerce_order_item_delete(OrderItemInterface $order_item) {
+  // Cleanup registration when order item gets deleted.
+  $registration = \Drupal::service('commerce_rng.registration_data')->getRegistrationByOrderItemId($order_item->id());
+  if ($registration instanceof RegistrationInterface) {
+    $registration->delete();
+  }
+}
+
+/**
  * Implements hook_ENTITY_TYPE_insert() for entity type 'registrant'.
  */
 function commerce_rng_registrant_insert(RegistrantInterface $registrant) {
