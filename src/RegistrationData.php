@@ -91,7 +91,7 @@ class RegistrationData implements RegistrationDataInterface {
   protected function createRegistration(EntityInterface $event) {
     $registration_types = $this->eventManager->getMeta($event)->getRegistrationTypes();
     if (count($registration_types) > 1) {
-      throw new \Exception('Multiple registration types not supported by UKKB Study.');
+      throw new \Exception('Multiple registration types not supported by Commerce RNG.');
     }
     if (count($registration_types) === 0) {
       throw new \Exception('No registration types found.');
