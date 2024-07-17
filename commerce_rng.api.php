@@ -5,6 +5,9 @@
  * API documentation.
  */
 
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\rng\RegistrationInterface;
+
 /**
  * @addtogroup hooks
  * @{
@@ -24,7 +27,7 @@
  * @param \Drupal\rng\RegistrationInterface $registration
  *   The registration for which the customer is adding a registrant.
  */
-function hook_commerce_rng_persons_list_alter(array &$persons, \Drupal\commerce_order\Entity\OrderInterface $order, \Drupal\rng\RegistrationInterface $registration) {
+function hook_commerce_rng_persons_list_alter(array &$persons, OrderInterface $order, RegistrationInterface $registration) {
   // Example 1: remove inactive persons from the list.
   foreach ($persons as $person_id => $person) {
     if (!$person->isActive()) {

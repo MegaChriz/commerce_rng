@@ -18,7 +18,7 @@ class CheckoutCompletionRegisterEventSubscriber implements EventSubscriberInterf
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events = [];
 
     // The class is only available since Commerce 8.x-2.12.
