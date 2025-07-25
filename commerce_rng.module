@@ -189,29 +189,50 @@ function commerce_rng_form_commerce_order_event_edit_form_alter(array &$form, Fo
     $product_variation_id = $registrant['product_variation_id'];
     if (!isset($buffer[$product_variation_id])) {
       $buffer[$product_variation_id] = commerce_rng_form_commerce_order_create_registration_form_container($order, $registrant['registration_id'], $registrant['product_variation_title']);
+
+      $buffer[$product_variation_id]['registrants'] = [
+        '#theme' => 'table',
+        '#header' => [
+          'label' => t('Name'),
+          'actions' => t('Operations'),
+        ],
+        '#rows' => [],
+      ];
     }
 
-    $edit_link = Link::fromTextAndUrl('edit',
-      Url::fromRoute('commerce_rng.registrant_form.edit', [
-        'commerce_order'      => $order->id(),
-        'registrant'          => $registrant['registrant_id'],
-      ]))->toString();
-
-    $delete_link = Link::fromTextAndUrl('delete',
-      Url::fromRoute('commerce_rng.registrant_form.delete', [
-        'commerce_order'      => $order->id(),
-        'registrant'          => $registrant['registrant_id'],
-      ]))->toString();
-
-    $buffer[$product_variation_id]['registrants'][] = [
-      '#type' => 'item',
-      '#markup' => t('@label (@edit | @delete)', [
-        '@label' => $registrant['registrant_label'],
-        '@edit' => $edit_link,
-        '@delete' => $delete_link,
-      ]),
+    $buffer[$product_variation_id]['registrants']['#rows'][] = [
+      'label' => $registrant['registrant_label'],
+      'actions' => [
+        'data' => [
+          '#type' => 'inline_template',
+          '#template' => '{{ edit }} {{ delete }}',
+          '#context' => [
+            'edit' => [
+              '#type' => 'link',
+              '#title' => t('Edit'),
+              '#url' => Url::fromRoute('commerce_rng.registrant_form.edit', [
+                'commerce_order' => $order->id(),
+                'registrant' => $registrant['registrant_id'],
+              ]),
+              '#attributes' => [
+                'class' => 'button',
+              ],
+            ],
+            'delete' => [
+              '#type' => 'link',
+              '#title' => t('Delete'),
+              '#url' => Url::fromRoute('commerce_rng.registrant_form.delete', [
+                'commerce_order' => $order->id(),
+                'registrant' => $registrant['registrant_id'],
+              ]),
+              '#attributes' => [
+                'class' => 'button',
+              ],
+            ],
+          ],
+        ],
+      ],
     ];
-
   }
 
   // Add registrant links for registrations that don't have registrants yet.
@@ -226,15 +247,20 @@ function commerce_rng_form_commerce_order_event_edit_form_alter(array &$form, Fo
   }
 
   if (!empty($buffer)) {
+    // Display underneath order_items.
+    if (isset($form['order_items']['#weight'])) {
+      $weight = $form['order_items']['#weight'] + 1;
+    }
+    else {
+      $weight = 1;
+    }
     $form['registrations-wrapper'] = [
-      '#type' => 'details',
-      '#title' => t('Registration Details'),
-      '#group' => 'advanced',
-      '#open' => TRUE,
+      '#type' => 'fieldset',
+      '#title' => t('Registration details'),
       '#attributes' => [
         'class' => ['order-form-registrations'],
       ],
-      '#weight' => 93,
+      '#weight' => $weight,
     ];
 
     $form['registrations-wrapper']['registrations'] = $buffer;
@@ -259,15 +285,16 @@ function commerce_rng_form_commerce_order_create_registration_form_container(Ord
     '#markup' => '<h4 class="label">' . $product_variation_title . '</h4>',
   ];
 
-  $create_link = Link::fromTextAndUrl('add registrant',
-    Url::fromRoute('commerce_rng.registrant_form.add', [
+  $wrapper['add_link'] = [
+    '#type' => 'link',
+    '#title' => t('Add registrant'),
+    '#url' => Url::fromRoute('commerce_rng.registrant_form.add', [
       'commerce_order' => $order->id(),
       'registration' => $registration_id,
-    ]))->toString();
-  $wrapper['add_link'] = [
-    '#markup' => $create_link,
-    '#prefix' => '<div class="clearfix">',
-    '#suffix' => '</div>',
+    ]),
+    '#attributes' => [
+      'class' => 'button',
+    ],
   ];
 
   return $wrapper;
