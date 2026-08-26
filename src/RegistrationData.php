@@ -9,6 +9,7 @@ use Drupal\commerce_product\Entity\ProductVariationInterface;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\rng\Entity\Registration;
 use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\EventManagerInterface;
@@ -71,7 +72,7 @@ class RegistrationData implements RegistrationDataInterface {
       if (!$registration instanceof RegistrationInterface) {
         // Create a new registration.
         $registration = $this->createRegistration($product);
-        $registration->field_order_item = $order_item_id;
+        $registration->set('field_order_item', $order_item_id);
         $registration->save();
       }
     }
@@ -112,7 +113,10 @@ class RegistrationData implements RegistrationDataInterface {
    */
   public function getOrderRegistrations(OrderInterface $order) {
     // Get all order items id's.
-    $order_item_ids = array_column($order->order_items->getValue(), 'target_id');
+    $order_item_ids = [];
+    foreach ($order->getItems() as $order_item) {
+      $order_item_ids[] = $order_item->id();
+    }
 
     if (empty($order_item_ids)) {
       // No order items. Bail out to avoid invalid query.
@@ -215,13 +219,18 @@ class RegistrationData implements RegistrationDataInterface {
    * {@inheritdoc}
    */
   public function registrationGetOrderItem(RegistrationInterface $registration) {
-    if ($registration->hasField('field_order_item')) {
-      $items = $registration->field_order_item->referencedEntities();
-      $item = reset($items);
-      return $item instanceof OrderItemInterface ? $item : NULL;
+    if (!$registration->hasField('field_order_item')) {
+      return NULL;
     }
 
-    return NULL;
+    $field = $registration->get('field_order_item');
+    if (!$field instanceof EntityReferenceFieldItemListInterface) {
+      return NULL;
+    }
+
+    $items = $field->referencedEntities();
+    $item = reset($items);
+    return $item instanceof OrderItemInterface ? $item : NULL;
   }
 
   /**

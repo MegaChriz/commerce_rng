@@ -195,8 +195,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
    *   The wrapper ID for the registrant.
    */
   public function getRegistrantWrapperId() {
-    $uuid = $this->registrant->uuid->first()->getValue();
-    return $uuid['value'];
+    return $this->registrant->uuid();
   }
 
   /**

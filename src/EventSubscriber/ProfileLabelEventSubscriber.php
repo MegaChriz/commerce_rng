@@ -40,8 +40,8 @@ class ProfileLabelEventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $value = $profile->field_name->value;
-    if ($value) {
+    $value = $profile->get('field_name')->getString();
+    if ($value !== '') {
       $event->setLabel($value);
     }
   }
