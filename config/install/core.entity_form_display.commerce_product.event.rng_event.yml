@@ -13,8 +13,6 @@ dependencies:
     - field.field.commerce_product.event.rng_registration_type
     - field.field.commerce_product.event.rng_reply_to
     - field.field.commerce_product.event.rng_status
-    - field.field.commerce_product.event.stores
-    - field.field.commerce_product.event.variations
   module:
     - rng
     - unlimited_number

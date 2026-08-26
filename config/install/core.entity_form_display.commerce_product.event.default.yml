@@ -4,8 +4,6 @@ dependencies:
   config:
     - commerce_product.commerce_product_type.event
     - field.field.commerce_product.event.body
-    - field.field.commerce_product.event.stores
-    - field.field.commerce_product.event.variations
   module:
     - commerce
     - inline_entity_form
