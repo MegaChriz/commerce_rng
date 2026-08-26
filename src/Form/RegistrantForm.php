@@ -129,6 +129,25 @@ class RegistrantForm extends ContentEntityForm implements AjaxFormInterface, Reg
   }
 
   /**
+   * The url to return to after submit or cancel.
+   *
+   * @return \Drupal\Core\Url
+   *   The return url.
+   */
+  public function getReturnUrl() {
+    return Url::fromRoute('entity.commerce_order.edit_form', [
+      'commerce_order' => $this->order->id(),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCancelUrl() {
+    return $this->getReturnUrl();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
@@ -175,8 +194,7 @@ class RegistrantForm extends ContentEntityForm implements AjaxFormInterface, Reg
     $this->order->save();
 
     // Redirect to the order.
-    $url = Url::fromRoute('entity.commerce_order.edit_form', ['commerce_order' => $this->order->id()]);
-    $form_state->setRedirectUrl($url);
+    $form_state->setRedirectUrl($this->getReturnUrl());
   }
 
 }

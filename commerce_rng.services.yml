@@ -27,6 +27,7 @@ services:
       - { name: commerce_order.availability_checker, priority: 0 }
   commerce_rng.checkout_completion_register_event_subscriber:
     class: Drupal\commerce_rng\EventSubscriber\CheckoutCompletionRegisterEventSubscriber
+    arguments: ['@commerce_rng.registration_data']
     tags:
       - {name: event_subscriber}
 

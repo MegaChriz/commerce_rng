@@ -3,6 +3,7 @@
 namespace Drupal\commerce_rng;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\rng\Entity\RegistrationInterface;
 
 /**
@@ -51,5 +52,27 @@ interface RegistrationDataInterface {
    *   A registration entity, if found. Null otherwise.
    */
   public function getRegistrationByOrderItemId($order_item_id);
+
+  /**
+   * Returns the order item's product if the product is a RNG event.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
+   *   The order item to check for.
+   *
+   * @return \Drupal\commerce_product\Entity\ProductInterface|null
+   *   The product entity if it is an event, or null.
+   */
+  public function orderItemGetEvent(OrderItemInterface $order_item);
+
+  /**
+   * Builds a list of registrants grouped by order item.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order to build a registrant list for.
+   *
+   * @return array
+   *   A Drupal render array keyed by order item ID.
+   */
+  public function buildRegistrantLists(OrderInterface $order);
 
 }

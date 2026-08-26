@@ -304,9 +304,13 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       if (!isset($list[$order_item_id])) {
         continue;
       }
+      $registrants = $list[$order_item_id]['registrants'] ?? [];
+      if (is_array($registrants)) {
+        unset($registrants['#title']);
+        $list[$order_item_id]['registrants'] = $registrants;
+      }
       $list[$order_item_id]['#type'] = 'item';
       $list[$order_item_id]['#title'] = $order_item->label();
-      unset($list[$order_item_id]['registrants']['#title']);
     }
 
     return $list;

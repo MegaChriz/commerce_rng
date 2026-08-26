@@ -6,6 +6,7 @@ use Drupal\commerce_checkout\Event\CheckoutCompletionRegisterEvent;
 use Drupal\commerce_checkout\Event\CheckoutEvents;
 use Drupal\commerce_order\Event\OrderEvent;
 use Drupal\commerce_order\Event\OrderEvents;
+use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -13,6 +14,23 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * Event subscriber for acting upon account creation during checkout.
  */
 class CheckoutCompletionRegisterEventSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The registration data service.
+   *
+   * @var \Drupal\commerce_rng\RegistrationDataInterface
+   */
+  protected $registrationData;
+
+  /**
+   * Constructs a new CheckoutCompletionRegisterEventSubscriber object.
+   *
+   * @param \Drupal\commerce_rng\RegistrationDataInterface $registration_data
+   *   The registration data service.
+   */
+  public function __construct(RegistrationDataInterface $registration_data) {
+    $this->registrationData = $registration_data;
+  }
 
   /**
    * {@inheritdoc}
@@ -31,14 +49,17 @@ class CheckoutCompletionRegisterEventSubscriber implements EventSubscriberInterf
   }
 
   /**
+   * Confirms registrations when payment is received.
    *
+   * @param \Drupal\commerce_order\Event\OrderEvent $event
+   *   The order event.
    */
   public function paymentReceived(OrderEvent $event) {
     $order = $event->getOrder();
 
     // Mark all registrations complete.
     /** @var \Drupal\rng\Entity\RegistrationInterface[] $registrations */
-    $registrations = \Drupal::service('commerce_rng.registration_data')->getOrderRegistrations($event->getOrder());
+    $registrations = $this->registrationData->getOrderRegistrations($order);
     foreach ($registrations as $registration) {
       $registration->setConfirmed(TRUE);
       $registration->save();
@@ -60,7 +81,7 @@ class CheckoutCompletionRegisterEventSubscriber implements EventSubscriberInterf
 
     // Assign persons used as registrant to account.
     /** @var \Drupal\rng\Entity\RegistrationInterface[] $registrations */
-    $registrations = \Drupal::service('commerce_rng.registration_data')->getOrderRegistrations($event->getOrder());
+    $registrations = $this->registrationData->getOrderRegistrations($event->getOrder());
     foreach ($registrations as $registration) {
       $registrants = $registration->getRegistrants();
       /** @var \Drupal\rng\Entity\RegistrantInterface $registrant */

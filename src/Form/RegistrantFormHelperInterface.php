@@ -87,4 +87,37 @@ interface RegistrantFormHelperInterface {
    */
   public function submitPersonForm(array &$form, FormStateInterface $form_state, OrderInterface $order);
 
+  /**
+   * Returns the default identity type for this event.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $event
+   *   The entity that acts as the event.
+   *
+   * @return string[]
+   *   An array that consists of the entity type ID and the bundle.
+   */
+  public function getIdentityType(EntityInterface $event);
+
+  /**
+   * Returns the event for the given registrant.
+   *
+   * @param \Drupal\rng\Entity\RegistrantInterface $registrant
+   *   A registrant entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The event entity.
+   */
+  public function getEvent(RegistrantInterface $registrant);
+
+  /**
+   * Creates a new person for the registrant.
+   *
+   * @param \Drupal\rng\Entity\RegistrantInterface $registrant
+   *   The registrant to create a person for.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The person entity.
+   */
+  public function createPersonForRegistrant(RegistrantInterface $registrant);
+
 }

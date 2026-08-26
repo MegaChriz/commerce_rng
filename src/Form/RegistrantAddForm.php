@@ -2,12 +2,14 @@
 
 namespace Drupal\commerce_rng\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\MainContent\MainContentRendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\commerce_rng\RegistrationDataInterface;
@@ -93,6 +95,13 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
   protected $registrationData;
 
   /**
+   * The AJAX main content renderer.
+   *
+   * @var \Drupal\Core\Render\MainContent\MainContentRendererInterface
+   */
+  protected $ajaxRenderer;
+
+  /**
    * Constructs a new RegistrantAddForm.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -109,6 +118,8 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
    *   Helper class for generating registrant forms.
    * @param \Drupal\commerce_rng\RegistrationDataInterface $registration_data
    *   The registration data service.
+   * @param \Drupal\Core\Render\MainContent\MainContentRendererInterface $ajax_renderer
+   *   The AJAX main content renderer.
    */
   public function __construct(
     ModuleHandlerInterface $module_handler,
@@ -118,6 +129,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     RegistrantFactoryInterface $registrant_factory,
     RegistrantFormHelperInterface $registrant_form_helper,
     RegistrationDataInterface $registration_data,
+    MainContentRendererInterface $ajax_renderer,
   ) {
     $this->moduleHandler = $module_handler;
     $this->entityTypeManager = $entity_type_manager;
@@ -126,6 +138,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     $this->registrantFactory = $registrant_factory;
     $this->registrantFormHelper = $registrant_form_helper;
     $this->registrationData = $registration_data;
+    $this->ajaxRenderer = $ajax_renderer;
 
     $this->initConstruct();
   }
@@ -141,7 +154,8 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
       $container->get('current_route_match'),
       $container->get('rng.registrant.factory'),
       $container->get('commerce_rng.registrant_form'),
-      $container->get('commerce_rng.registration_data')
+      $container->get('commerce_rng.registration_data'),
+      $container->get('main_content_renderer.ajax')
     );
   }
 
@@ -346,7 +360,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
       $form['persons'] = $this->buildPersonsTable($form['persons'], $form_state, $persons);
 
       $form['persons']['new'] = [
-        '#name' => 'ajax-submit-' . implode('-', $form['persons']['#parents']) . '-' . 'new',
+        '#name' => 'ajax-submit-' . implode('-', $form['persons']['#parents']) . '-new',
         '#type' => 'submit',
         '#value' => t('New person'),
         '#submit' => [
@@ -518,10 +532,13 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
    *   The current state of the form.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The AJAX response.
    */
-  public function ajaxRegistrantElement(array $form, FormStateInterface $form_state, Request $request) {
-    $renderer = \Drupal::service('main_content_renderer.ajax');
-    $response = $renderer->renderResponse($form, $request, $this->routeMatch);
+  public function ajaxRegistrantElement(array $form, FormStateInterface $form_state, Request $request): AjaxResponse {
+    /** @var \Drupal\Core\Ajax\AjaxResponse $response */
+    $response = $this->ajaxRenderer->renderResponse($form, $request, $this->routeMatch);
     $response->addCommand(new InvokeCommand('#drupal-modal', 'scrollTop', [0]));
 
     return $response;

@@ -34,6 +34,14 @@ interface AjaxFormInterface extends FormInterface {
   public function submitCancel(array &$form, FormStateInterface $form_state);
 
   /**
+   * Returns the URL to redirect to when cancelling.
+   *
+   * @return \Drupal\Core\Url
+   *   The cancel URL.
+   */
+  public function getCancelUrl();
+
+  /**
    * Ajax callback that closes the current dialog.
    *
    * @param array $form
