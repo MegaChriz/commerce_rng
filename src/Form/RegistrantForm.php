@@ -11,6 +11,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -175,12 +176,13 @@ class RegistrantForm extends ContentEntityForm implements AjaxFormInterface, Reg
     // Update person.
     $values = $form_state->getValue($form['#array_parents']);
     if (isset($values['person'])) {
+      $registrant = $this->getRegistrant();
       $person = $this->registrantFormHelper->submitPersonForm($form['person'], $form_state, $this->getOrder());
-      $this->entity->setIdentity($person);
-      $this->entity->save();
+      $registrant->setIdentity($person);
+      $registrant->save();
 
       // Set owner on person.
-      if (!$person->getOwnerId()) {
+      if ($person instanceof EntityOwnerInterface && !$person->getOwnerId()) {
         $uid = $this->order->getCustomerId();
         if ($uid) {
           $person->setOwnerId($uid);

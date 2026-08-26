@@ -11,12 +11,14 @@ use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Url;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
+use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
 use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\rng\Entity\RegistrantInterface;
 use Drupal\rng\Entity\Registration;
 use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\EventManagerInterface;
+use Drupal\rng\EventMetaInterface;
 use Drupal\rng\RegistrantFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -150,7 +152,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   public function isVisible() {
     // The order must contain at least one event product entity.
     foreach ($this->order->getItems() as $order_item) {
-      if ($this->registrationData->orderItemGetEvent($order_item)) {
+      if ($this->registrationData->orderItemGetEvent($order_item) instanceof ProductInterface) {
         return TRUE;
       }
     }
@@ -164,7 +166,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   public function isComplete() {
     foreach ($this->order->getItems() as $order_item) {
       $product = $this->registrationData->orderItemGetEvent($order_item);
-      if (!$product) {
+      if (!$product instanceof ProductInterface) {
         // Not an event.
         continue;
       }
@@ -172,9 +174,8 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       $order_item_id = $order_item->id();
 
       // Check for an existing registration on the order item.
-      /** @var \Drupal\rng\Entity\RegistrationInterface|null $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
-      if (!$registration) {
+      if (!$registration instanceof RegistrationInterface) {
         // A certain event item does not contain a registration yet. Information
         // is not complete.
         return FALSE;
@@ -195,7 +196,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   /**
    * Returns the registrants from the given registration.
    *
-   * @param \Drupal\rng\RegistrationInterface $registration
+   * @param \Drupal\rng\Entity\RegistrationInterface $registration
    *   A registration entity.
    *
    * @return \Drupal\rng\Entity\RegistrantInterface[]
@@ -223,7 +224,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
     $registrant = $form_state->get('registrant__entity');
 
     // Secondly, pick the first one, if available and if there is only one.
-    if (!$registrant) {
+    if (!$registrant instanceof RegistrantInterface) {
       $registrants = $this->getRegistrants($registration);
 
       // If there is no registrant, create a new one.
@@ -322,7 +323,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
     foreach ($this->order->getItems() as $order_item) {
       $product = $this->registrationData->orderItemGetEvent($order_item);
-      if (!$product) {
+      if (!$product instanceof ProductInterface) {
         // Not an event.
         continue;
       }
@@ -332,8 +333,10 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       // Create registrations for order items that don't have them yet.
       $this->registrationData->generateOrderRegistrations($this->order);
 
-      /** @var \Drupal\rng\Entity\Registration $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
+      if (!$registration instanceof RegistrationInterface) {
+        continue;
+      }
 
       $pane_form[$order_item_id] = [
         '#parents' => array_merge($pane_form['#parents'], [$order_item_id]),
@@ -543,7 +546,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   public function validatePaneForm(array &$pane_form, FormStateInterface $form_state, array &$complete_form) {
     foreach ($this->order->getItems() as $order_item) {
       $product = $this->registrationData->orderItemGetEvent($order_item);
-      if (!$product) {
+      if (!$product instanceof ProductInterface) {
         // Not an event.
         continue;
       }
@@ -551,12 +554,11 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
       $order_item_id = $order_item->id();
 
       // Check for enough registrants on the order item.
-      /** @var \Drupal\rng\Entity\Registration|null $registration */
       $registration = $this->registrationData->getRegistrationByOrderItemId($order_item_id);
       $minimum = $this->getRegistrantsMinimum($product);
       $maximum = $this->getRegistrantsMaximum($product);
 
-      if (!$registration || count($registration->getRegistrantIds()) < $minimum) {
+      if (!$registration instanceof RegistrationInterface || count($registration->getRegistrantIds()) < $minimum) {
         // A certain event item does not contain a registration yet or has zero
         // registrants.
         $form_state->setError($pane_form, $this->formatPlural($minimum, 'There are not enough registrants for %title. There must be at least 1 registrant.', 'There are not enough registrants for %title. There must be at least @minimum registrants.', [
@@ -564,7 +566,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
           '@minimum' => $minimum,
         ]));
       }
-      elseif ($maximum >= $minimum && count($registration->getRegistrantIds()) > $maximum) {
+      elseif ($maximum !== EventMetaInterface::CAPACITY_UNLIMITED && $maximum >= $minimum && count($registration->getRegistrantIds()) > $maximum) {
         $form_state->setError($pane_form, $this->formatPlural($maximum, 'There are too many registrants for %title. There must be at most 1 registrant.', 'There are too many registrants for %title. There must be at most @maximum registrants.', [
           '%title' => $order_item->getTitle(),
           '@maximum' => $maximum,
@@ -592,11 +594,12 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
    * @param \Drupal\Core\Entity\EntityInterface $product
    *   The product entity.
    *
-   * @return int|EventMetaInterfaceCAPACITY_UNLIMITED
-   *   Maximum number of registrants allowed (>= 0), or unlimited.
+   * @return int
+   *   Maximum number of registrants allowed (>= 0), or
+   *   EventMetaInterface::CAPACITY_UNLIMITED.
    */
-  protected function getRegistrantsMaximum(EntityInterface $product) {
-    return $this->eventManager->getMeta($product)->getRegistrantsMaximum();
+  protected function getRegistrantsMaximum(EntityInterface $product): int {
+    return $this->eventManager->getMeta($product)->getRegistrantCapacity();
   }
 
 }

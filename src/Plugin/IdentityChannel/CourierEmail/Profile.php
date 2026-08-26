@@ -4,6 +4,7 @@ namespace Drupal\commerce_rng\Plugin\IdentityChannel\CourierEmail;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\courier\ChannelInterface;
+use Drupal\courier\EmailInterface;
 use Drupal\courier\Exception\IdentityException;
 use Drupal\courier\Plugin\IdentityChannel\IdentityChannelPluginInterface;
 
@@ -24,6 +25,10 @@ class Profile implements IdentityChannelPluginInterface {
    * {@inheritdoc}
    */
   public function applyIdentity(ChannelInterface &$message, EntityInterface $identity) {
+    if (!$message instanceof EmailInterface) {
+      throw new IdentityException('Message is not an email channel.');
+    }
+
     if (isset($identity->field_email)) {
       $email = $identity->field_email;
       if (!empty($email->value)) {

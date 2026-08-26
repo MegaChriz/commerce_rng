@@ -2,12 +2,13 @@
 
 namespace Drupal\commerce_rng;
 
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
 use Drupal\commerce_product\Entity\ProductVariationType;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rng\Entity\Registration;
 use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\EventManagerInterface;
@@ -58,7 +59,7 @@ class RegistrationData implements RegistrationDataInterface {
   public function generateOrderRegistrations(OrderInterface $order) {
     foreach ($order->getItems() as $order_item) {
       $product = $this->orderItemGetEvent($order_item);
-      if (!$product) {
+      if (!$product instanceof ProductInterface) {
         // Not an event.
         continue;
       }
@@ -66,9 +67,8 @@ class RegistrationData implements RegistrationDataInterface {
       $order_item_id = $order_item->id();
 
       // Check for an existing registration on the order item.
-      /** @var \Drupal\rng\Entity\Registration|null $registration */
       $registration = $this->getRegistrationByOrderItemId($order_item_id);
-      if (!$registration) {
+      if (!$registration instanceof RegistrationInterface) {
         // Create a new registration.
         $registration = $this->createRegistration($product);
         $registration->field_order_item = $order_item_id;
@@ -83,12 +83,12 @@ class RegistrationData implements RegistrationDataInterface {
    * @param \Drupal\Core\Entity\EntityInterface $event
    *   The event to create a registration entity for.
    *
-   * @return \Drupal\rng\RegistrationInterface
+   * @return \Drupal\rng\Entity\RegistrationInterface
    *   A registration instance.
    *
    * @todo fails if event is not configured.
    */
-  protected function createRegistration(EntityInterface $event) {
+  protected function createRegistration(EntityInterface $event): RegistrationInterface {
     $registration_types = $this->eventManager->getMeta($event)->getRegistrationTypes();
     if (count($registration_types) > 1) {
       throw new \Exception('Multiple registration types not supported by Commerce RNG.');
@@ -142,27 +142,27 @@ class RegistrationData implements RegistrationDataInterface {
 
     if (!empty($registration_ids)) {
       $registration_id = reset($registration_ids);
-      return $this->registrationStorage->load($registration_id);
+      /** @var \Drupal\rng\Entity\RegistrationInterface|null $registration */
+      $registration = $this->registrationStorage->load($registration_id);
+      return $registration;
     }
+
+    return NULL;
   }
 
   /**
-   * Returns the order item's product if the product is a RNG event.
-   *
-   * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
-   *   The order item to check for.
-   *
-   * @return \Drupal\commerce_product\Entity\ProductInterface|null
-   *   The product entity if it is an event, or null.
+   * {@inheritdoc}
    */
   public function orderItemGetEvent(OrderItemInterface $order_item) {
     $purchased_entity = $order_item->getPurchasedEntity();
     if ($purchased_entity instanceof ProductVariationInterface) {
       $product = $purchased_entity->getProduct();
-      if ($product && $this->eventManager->isEvent($product)) {
+      if ($product instanceof ProductInterface && $this->eventManager->isEvent($product)) {
         return $product;
       }
     }
+
+    return NULL;
   }
 
   /**
@@ -180,14 +180,14 @@ class RegistrationData implements RegistrationDataInterface {
     foreach ($order->getItems() as $item) {
       $order_item_id = $item->id();
       $registration = $this->getRegistrationByOrderItemId($order_item_id);
-      if ($registration) {
+      if ($registration instanceof RegistrationInterface) {
         foreach ($registration->getRegistrants() as $registrant) {
           // Skip empty registrants.
           if (!$registrant->id()) {
             continue;
           }
           $identity = $registrant->getIdentity();
-          if ($identity) {
+          if ($identity instanceof EntityInterface) {
             $registrants_per_order_item[$order_item_id][$registrant->id()] = $identity->label();
           }
           else {
@@ -217,8 +217,11 @@ class RegistrationData implements RegistrationDataInterface {
   public function registrationGetOrderItem(RegistrationInterface $registration) {
     if ($registration->hasField('field_order_item')) {
       $items = $registration->field_order_item->referencedEntities();
-      return reset($items);
+      $item = reset($items);
+      return $item instanceof OrderItemInterface ? $item : NULL;
     }
+
+    return NULL;
   }
 
   /**
@@ -231,7 +234,7 @@ class RegistrationData implements RegistrationDataInterface {
    */
   public function orderItemUpdateQuantity(OrderItemInterface $order_item) {
     $registration = $this->getRegistrationByOrderItemId($order_item->id());
-    if ($registration) {
+    if ($registration instanceof RegistrationInterface) {
       $quantity = count($registration->getRegistrantIds());
       // Update the order item quantity in case it is above zero.
       if ($quantity > 0) {
@@ -250,7 +253,7 @@ class RegistrationData implements RegistrationDataInterface {
         $registration->save();
       }
     }
-    elseif ($this->orderItemGetEvent($order_item)) {
+    elseif ($this->orderItemGetEvent($order_item) instanceof ProductInterface) {
       // If no registration for this item is known, the quantity is always one.
       $order_item->setQuantity(1);
     }
@@ -305,7 +308,7 @@ class RegistrationData implements RegistrationDataInterface {
         ];
 
         $identity = $registrant->getIdentity();
-        if ($identity) {
+        if ($identity instanceof EntityInterface) {
           $data[$registrant_id] += [
             'registrant_identity_id' => $identity->id(),
             'registrant_identity_type' => $identity->getEntityTypeId(),

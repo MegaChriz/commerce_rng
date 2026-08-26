@@ -4,6 +4,7 @@ namespace Drupal\commerce_rng\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -174,7 +175,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
       $event = $this->registrantFormHelper->getEvent($this->registrant);
       [$person_entity_type_id, $person_bundle] = $this->registrantFormHelper->getIdentityType($event);
       $person = $this->entityTypeManager->getStorage($person_entity_type_id)->load($person_id);
-      if ($person) {
+      if ($person instanceof EntityInterface) {
         $this->registrant->setIdentity($person);
       }
     }
@@ -250,7 +251,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
 
       foreach ($registration->getRegistrants() as $registrant) {
         $person = $registrant->getIdentity();
-        if ($person) {
+        if ($person instanceof EntityInterface) {
           $persons[$person->id()] = $person;
         }
       }
@@ -300,7 +301,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     // Remove any ID's that are already in current registration.
     foreach ($this->registration->getRegistrants() as $registrant) {
       $person = $registrant->getIdentity();
-      if ($person) {
+      if ($person instanceof EntityInterface) {
         unset($ids[$person->id()]);
       }
     }
@@ -339,7 +340,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
 
     $identity = $this->registrant->getIdentity();
 
-    if (!$identity) {
+    if (!$identity instanceof EntityInterface) {
       // Wrapper.
       $form['#prefix'] = '<div id="' . $this->getRegistrantWrapperId() . '">';
       $form['#suffix'] = '</div>';

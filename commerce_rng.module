@@ -47,34 +47,36 @@ function commerce_rng_entity_extra_field_info() {
 /**
  * Implements hook_ENTITY_TYPE_view() for registrant entities.
  */
-function commerce_rng_registrant_view(array &$build, EntityInterface $registrant, EntityViewDisplayInterface $display, $view_mode) {
+function commerce_rng_registrant_view(array &$build, RegistrantInterface $registrant, EntityViewDisplayInterface $display, $view_mode) {
   if ($display->getComponent('registration')) {
     $registration = $registrant->getRegistration();
-    if ($registration->access('view')) {
+    if ($registration instanceof RegistrationInterface && $registration->access('view')) {
       $build['registration'] = $registration->toLink(t('Registration'))->toRenderable();
     }
   }
 
   if ($display->getComponent('order')) {
     $registration = $registrant->getRegistration();
-    $order_item = \Drupal::service('commerce_rng.registration_data')
-      ->registrationGetOrderItem($registration);
-    if ($order_item instanceof OrderItemInterface) {
-      $order = $order_item->getOrder();
+    if ($registration instanceof RegistrationInterface) {
+      $order_item = \Drupal::service('commerce_rng.registration_data')
+        ->registrationGetOrderItem($registration);
+      if ($order_item instanceof OrderItemInterface) {
+        $order = $order_item->getOrder();
 
-      if ($order->access('view')) {
-        $build['order'] = [
-          '#type' => 'item',
-          '#title' => t('Order', [], ['context' => 'commerce_order']),
-          $order->toLink()->toRenderable(),
-        ];
+        if ($order->access('view')) {
+          $build['order'] = [
+            '#type' => 'item',
+            '#title' => t('Order', [], ['context' => 'commerce_order']),
+            $order->toLink()->toRenderable(),
+          ];
+        }
       }
     }
   }
 
   if ($display->getComponent('event')) {
-    $event = $registrant->getRegistration()
-      ->getEvent();
+    $registration = $registrant->getRegistration();
+    $event = $registration instanceof RegistrationInterface ? $registration->getEvent() : NULL;
 
     if ($event instanceof EntityInterface && $event->access('view')) {
       $build['event'] = [
@@ -114,12 +116,12 @@ function commerce_rng_commerce_order_item_delete(OrderItemInterface $order_item)
  */
 function commerce_rng_registrant_insert(RegistrantInterface $registrant) {
   $registration = $registrant->getRegistration();
-  if (!$registration) {
+  if (!$registration instanceof RegistrationInterface) {
     return;
   }
 
   $order_item = \Drupal::service('commerce_rng.registration_data')->registrationGetOrderItem($registration);
-  if (!$order_item) {
+  if (!$order_item instanceof OrderItemInterface) {
     return;
   }
 
@@ -237,7 +239,7 @@ function commerce_rng_form_commerce_order_event_edit_form_alter(array &$form, Fo
   // Add registrant links for registrations that don't have registrants yet.
   foreach ($registrations as $registration) {
     $order_item = $order_services->registrationGetOrderItem($registration);
-    if ($order_item) {
+    if ($order_item instanceof OrderItemInterface) {
       $product_variation = $order_item->getPurchasedEntity();
       if (!isset($buffer[$product_variation->id()])) {
         $buffer[$product_variation->id()] = commerce_rng_form_commerce_order_create_registration_form_container($order, $registration->id(), $product_variation->label());

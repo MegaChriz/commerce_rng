@@ -9,6 +9,7 @@ use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\rng\EventManagerInterface;
+use Drupal\rng\EventMetaInterface;
 
 /**
  * Checks if an event is open for registrations.
@@ -74,13 +75,12 @@ class EventAvailabilityChecker implements AvailabilityCheckerInterface {
    */
   public function check(OrderItemInterface $order_item, Context $context): AvailabilityResult {
     $product = $this->getEventProductFromOrderItem($order_item);
-    if (!$product) {
+    if (!$product instanceof ProductInterface) {
       return AvailabilityResult::unavailable($this->t('This product is not an event.'));
     }
 
-    /** @var \Drupal\rng\EventMetaInterface|null $meta */
     $meta = $this->eventManager->getMeta($product);
-    if (!$meta) {
+    if (!$meta instanceof EventMetaInterface) {
       // No metadata available.
       return AvailabilityResult::unavailable($this->t('Event metadata is not available.'));
     }

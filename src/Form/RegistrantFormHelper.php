@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\rng\Entity\RegistrantInterface;
+use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\EventManagerInterface;
 
 /**
@@ -18,7 +19,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
   /**
    * The entity type manager.
    *
-   * @var \Drupal\rng\EventManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
@@ -95,12 +96,12 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
    */
   public function getEvent(RegistrantInterface $registrant) {
     $registration = $registrant->getRegistration();
-    if (!$registration) {
+    if (!$registration instanceof RegistrationInterface) {
       throw new \Exception('The registration for this registrant no longer exists.');
     }
 
     $event = $registration->getEvent();
-    if (!$event) {
+    if (!$event instanceof EntityInterface) {
       throw new \Exception('The event for this registrant no longer exists.');
     }
 
@@ -118,7 +119,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
    */
   protected function getOrder(RegistrantInterface $registrant) {
     $registration = $registrant->getRegistration();
-    if (!$registration) {
+    if (!$registration instanceof RegistrationInterface) {
       throw new \Exception('The registration for this registrant no longer exists.');
     }
 
@@ -159,7 +160,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
     $event = $this->getEvent($registrant);
 
     $person = $registrant->getIdentity();
-    if (!$person) {
+    if (!$person instanceof EntityInterface) {
       [$person_entity_type_id, $person_bundle] = $this->getIdentityType($event);
       $person = $this->createPerson($person_entity_type_id, $person_bundle);
     }
@@ -221,7 +222,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
     $event = $this->getEvent($registrant);
 
     $person = $registrant->getIdentity();
-    if (!$person) {
+    if (!$person instanceof EntityInterface) {
       [$person_entity_type_id, $person_bundle] = $this->getIdentityType($event);
       $person = $this->createPerson($person_entity_type_id, $person_bundle);
     }

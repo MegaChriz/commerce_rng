@@ -4,6 +4,7 @@ namespace Drupal\commerce_rng\Routing;
 
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
+use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -31,7 +32,7 @@ class RouteSubscriber extends RouteSubscriberBase {
     ];
     foreach ($routes as $route) {
       $route_object = $collection->get($route);
-      if ($route_object) {
+      if ($route_object instanceof Route) {
         $route_object->setRequirement('_access', 'FALSE');
       }
     }

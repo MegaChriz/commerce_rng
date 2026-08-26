@@ -4,6 +4,7 @@ namespace Drupal\commerce_rng\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -81,8 +82,8 @@ class RegistrantDeleteForm extends ContentEntityDeleteForm implements AjaxFormIn
    * {@inheritdoc}
    */
   public function getQuestion() {
-    $identity = $this->entity->getIdentity();
-    if (!$identity) {
+    $identity = $this->getRegistrant()->getIdentity();
+    if (!$identity instanceof EntityInterface) {
       return parent::getQuestion();
     }
 
@@ -102,10 +103,10 @@ class RegistrantDeleteForm extends ContentEntityDeleteForm implements AjaxFormIn
    * {@inheritdoc}
    */
   protected function getDeletionMessage() {
-    $identity = $this->entity->getIdentity();
+    $identity = $this->getRegistrant()->getIdentity();
 
     return $this->t('The registration for %person has been deleted.', [
-      '%person' => $identity->label(),
+      '%person' => $identity instanceof EntityInterface ? $identity->label() : '',
     ]);
   }
 
