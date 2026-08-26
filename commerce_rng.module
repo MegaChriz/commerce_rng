@@ -5,19 +5,18 @@
  * An implementation of integration between RNG and Commerce.
  */
 
-use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\profile\Entity\ProfileInterface;
 use Drupal\rng\Entity\RegistrantInterface;
 use Drupal\rng\Entity\RegistrationInterface;
 
 /*******************************************************************************
- * DRUPAL HOOKS
+ * DRUPAL HOOKS.
  ******************************************************************************/
 
 /**
@@ -88,7 +87,7 @@ function commerce_rng_registrant_view(array &$build, EntityInterface $registrant
 }
 
 /*******************************************************************************
- * ENTITY HOOKS
+ * ENTITY HOOKS.
  ******************************************************************************/
 
 /**
@@ -145,7 +144,7 @@ function commerce_rng_registrant_delete(RegistrantInterface $registrant) {
 }
 
 /*******************************************************************************
- * COMMERCE RNG HOOKS
+ * COMMERCE RNG HOOKS.
  ******************************************************************************/
 
 /**
@@ -162,7 +161,7 @@ function commerce_rng_commerce_rng_persons_list_alter(array &$persons, OrderInte
 }
 
 /*******************************************************************************
- * FORM ALTERS
+ * FORM ALTERS.
  ******************************************************************************/
 
 /**
@@ -174,7 +173,7 @@ function commerce_rng_form_commerce_order_event_edit_form_alter(array &$form, Fo
   /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
   $order = \Drupal::routeMatch()->getParameter('commerce_order');
 
-  /* @var \Drupal\commerce_rng\RegistrationData $order_services */
+  /** @var \Drupal\commerce_rng\RegistrationData $order_services */
   $order_services = \Drupal::service('commerce_rng.registration_data');
 
   // Create registrations for order items that don't have them yet.
@@ -301,7 +300,7 @@ function commerce_rng_form_commerce_order_create_registration_form_container(Ord
 }
 
 /*******************************************************************************
- * THEMING
+ * THEMING.
  ******************************************************************************/
 
 /**

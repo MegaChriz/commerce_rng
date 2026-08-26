@@ -2,9 +2,9 @@
 
 namespace Drupal\commerce_rng\Plugin\Commerce\CheckoutFlow;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowWithPanesBase;
 use Drupal\commerce_rng\Plugin\Commerce\CheckoutPane\IsPaneCompleteInterface;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides the conference multistep checkout flow.

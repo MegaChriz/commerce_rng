@@ -6,7 +6,6 @@ use Drupal\commerce_checkout\Event\CheckoutCompletionRegisterEvent;
 use Drupal\commerce_checkout\Event\CheckoutEvents;
 use Drupal\commerce_order\Event\OrderEvent;
 use Drupal\commerce_order\Event\OrderEvents;
-use Drupal\commerce_payment\Event\PaymentEvents;
 use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -31,7 +30,9 @@ class CheckoutCompletionRegisterEventSubscriber implements EventSubscriberInterf
     return $events;
   }
 
-
+  /**
+   *
+   */
   public function paymentReceived(OrderEvent $event) {
     $order = $event->getOrder();
 

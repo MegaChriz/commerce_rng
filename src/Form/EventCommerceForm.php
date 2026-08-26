@@ -2,16 +2,16 @@
 
 namespace Drupal\commerce_rng\Form;
 
-use Drupal\commerce_product\Entity\ProductVariationType;
-use Drupal\Core\Config\ConfigFactory;
-use Drupal\rng\Entity\Group;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Action\ActionManager;
 use Drupal\Core\Condition\ConditionManager;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RedirectDestinationInterface;
+use Drupal\commerce_product\Entity\ProductVariationType;
+use Drupal\rng\Entity\Group;
 use Drupal\rng\EventManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for configuring Commerce RNG integration.

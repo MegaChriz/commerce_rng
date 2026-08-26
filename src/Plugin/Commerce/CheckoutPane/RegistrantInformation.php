@@ -2,24 +2,22 @@
 
 namespace Drupal\commerce_rng\Plugin\Commerce\CheckoutPane;
 
-use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
-use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
-use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce_product\Entity\ProductVariationInterface;
-use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
-use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Url;
+use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
+use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
+use Drupal\commerce_rng\Form\RegistrantFormHelperInterface;
+use Drupal\commerce_rng\RegistrationDataInterface;
+use Drupal\rng\Entity\RegistrantInterface;
+use Drupal\rng\Entity\Registration;
+use Drupal\rng\Entity\RegistrationInterface;
 use Drupal\rng\EventManagerInterface;
 use Drupal\rng\RegistrantFactoryInterface;
-use Drupal\rng\Entity\RegistrantInterface;
-use Drupal\rng\Entity\RegistrationInterface;
-use Drupal\rng\Entity\Registration;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -115,7 +113,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
     EventManagerInterface $event_manager,
     RegistrantFactoryInterface $registrant_factory,
     RegistrantFormHelperInterface $registrant_form_helper,
-    RegistrationDataInterface $registration_data
+    RegistrationDataInterface $registration_data,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $checkout_flow, $entity_type_manager);
 
@@ -130,7 +128,7 @@ class RegistrantInformation extends CheckoutPaneBase implements IsPaneCompleteIn
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, CheckoutFlowInterface $checkout_flow = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?CheckoutFlowInterface $checkout_flow = NULL) {
     return new static(
       $configuration,
       $plugin_id,

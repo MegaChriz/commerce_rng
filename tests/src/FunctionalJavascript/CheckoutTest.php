@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\commerce_rng\FunctionalJavascript;
 
-use Drupal\commerce_order\Entity\Order;
 use Drupal\Core\Url;
+use Drupal\commerce_order\Entity\Order;
 use Drupal\profile\Entity\Profile;
 
 /**

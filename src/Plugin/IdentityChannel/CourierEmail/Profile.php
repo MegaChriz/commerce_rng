@@ -2,10 +2,10 @@
 
 namespace Drupal\commerce_rng\Plugin\IdentityChannel\CourierEmail;
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\courier\ChannelInterface;
 use Drupal\courier\Exception\IdentityException;
 use Drupal\courier\Plugin\IdentityChannel\IdentityChannelPluginInterface;
-use Drupal\courier\ChannelInterface;
-use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Supports profile entities.

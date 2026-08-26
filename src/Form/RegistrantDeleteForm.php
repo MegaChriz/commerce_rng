@@ -54,7 +54,7 @@ class RegistrantDeleteForm extends ContentEntityDeleteForm implements AjaxFormIn
     EntityTypeBundleInfoInterface $entity_type_bundle_info,
     TimeInterface $time,
     ModuleHandlerInterface $module_handler,
-    RouteMatchInterface $route_match
+    RouteMatchInterface $route_match,
   ) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 

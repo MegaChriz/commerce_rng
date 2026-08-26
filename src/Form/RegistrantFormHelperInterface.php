@@ -2,9 +2,9 @@
 
 namespace Drupal\commerce_rng\Form;
 
-use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\rng\Entity\RegistrantInterface;
 
 /**

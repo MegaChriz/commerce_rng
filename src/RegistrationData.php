@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_rng;
 
-use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce_product\Entity\ProductVariationType;
-use Drupal\commerce_product\Entity\ProductVariationInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_product\Entity\ProductVariationInterface;
+use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\rng\Entity\Registration;
-use Drupal\rng\EventManagerInterface;
 use Drupal\rng\Entity\RegistrationInterface;
+use Drupal\rng\EventManagerInterface;
 
 /**
  * Service for managing registration data.

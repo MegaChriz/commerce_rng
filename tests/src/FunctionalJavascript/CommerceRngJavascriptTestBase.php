@@ -2,10 +2,10 @@
 
 namespace Drupal\Tests\commerce_rng\FunctionalJavascript;
 
-use Drupal\commerce_store\StoreCreationTrait;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\commerce_rng\Traits\CommerceRngCommonTrait;
+use Drupal\commerce_store\StoreCreationTrait;
 
 /**
  * Base class for Commerce RNG javascript tests.

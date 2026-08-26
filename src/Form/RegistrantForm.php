@@ -73,7 +73,7 @@ class RegistrantForm extends ContentEntityForm implements AjaxFormInterface, Reg
     ModuleHandlerInterface $module_handler,
     RouteMatchInterface $route_match,
     EntityFormBuilderInterface $form_builder,
-    RegistrantFormHelperInterface $registrant_form_helper
+    RegistrantFormHelperInterface $registrant_form_helper,
   ) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
 

@@ -2,13 +2,13 @@
 
 namespace Drupal\commerce_rng\Form;
 
-use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\rng\EventManagerInterface;
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\rng\Entity\RegistrantInterface;
+use Drupal\rng\EventManagerInterface;
 
 /**
  * Helper class for building registrant forms.
@@ -160,7 +160,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
 
     $person = $registrant->getIdentity();
     if (!$person) {
-      list($person_entity_type_id, $person_bundle) = $this->getIdentityType($event);
+      [$person_entity_type_id, $person_bundle] = $this->getIdentityType($event);
       $person = $this->createPerson($person_entity_type_id, $person_bundle);
     }
 
@@ -222,7 +222,7 @@ class RegistrantFormHelper implements RegistrantFormHelperInterface {
 
     $person = $registrant->getIdentity();
     if (!$person) {
-      list($person_entity_type_id, $person_bundle) = $this->getIdentityType($event);
+      [$person_entity_type_id, $person_bundle] = $this->getIdentityType($event);
       $person = $this->createPerson($person_entity_type_id, $person_bundle);
     }
     $form = $this->buildPersonForm($form, $form_state, $event, $person);

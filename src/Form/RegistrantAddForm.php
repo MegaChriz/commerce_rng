@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_rng\Form;
 
-use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\commerce_rng\RegistrationDataInterface;
 use Drupal\rng\RegistrantFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -117,7 +117,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     RouteMatchInterface $route_match,
     RegistrantFactoryInterface $registrant_factory,
     RegistrantFormHelperInterface $registrant_form_helper,
-    RegistrationDataInterface $registration_data
+    RegistrationDataInterface $registration_data,
   ) {
     $this->moduleHandler = $module_handler;
     $this->entityTypeManager = $entity_type_manager;
@@ -158,7 +158,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
     $person_id = $this->routeMatch->getParameter('person');
     if ($person_id) {
       $event = $this->registrantFormHelper->getEvent($this->registrant);
-      list($person_entity_type_id, $person_bundle) = $this->registrantFormHelper->getIdentityType($event);
+      [$person_entity_type_id, $person_bundle] = $this->registrantFormHelper->getIdentityType($event);
       $person = $this->entityTypeManager->getStorage($person_entity_type_id)->load($person_id);
       if ($person) {
         $this->registrant->setIdentity($person);
@@ -266,7 +266,7 @@ class RegistrantAddForm extends FormBase implements AjaxFormInterface, Registran
 
     // Get identity entity type.
     $event = $this->registrantFormHelper->getEvent($this->registrant);
-    list($person_entity_type_id, $person_bundle) = $this->registrantFormHelper->getIdentityType($event);
+    [$person_entity_type_id, $person_bundle] = $this->registrantFormHelper->getIdentityType($event);
 
     // Find existing identities.
     $storage = $this->entityTypeManager->getStorage($person_entity_type_id);

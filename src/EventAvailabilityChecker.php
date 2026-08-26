@@ -2,10 +2,10 @@
 
 namespace Drupal\commerce_rng;
 
-use Drupal\commerce_product\Entity\ProductInterface;
+use Drupal\commerce\Context;
 use Drupal\commerce_order\AvailabilityCheckerInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce\Context;
+use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\rng\EventManagerInterface;
 
 /**

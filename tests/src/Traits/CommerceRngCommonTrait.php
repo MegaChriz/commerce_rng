@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\commerce_rng\Traits;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\commerce_store\Entity\StoreInterface;
-use Drupal\Component\Render\FormattableMarkup;
 
 /**
  * Provides methods useful for Kernel and Functional Commerce RNG tests.
